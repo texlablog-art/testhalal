@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold text-navy mb-0">Shopping Cart</h3>
+        <span class="badge bg-light text-dark border rounded-pill px-3 py-2">{{ items|length }} Items</span>
+    </div>
+    
+    {% if items %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% for item in items %}
+            <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                <div class="card-body p-3">
+                    <div class="row align-items-center">
+                        <div class="col-4 col-md-2">
+                            <div class="position-relative">
+                                <img src="{{ item.main_image }}" 
+                                     class="img-fluid rounded-3 border w-100" 
+                                     style="aspect-ratio: 1/1; object-fit: cover;" 
+                                     alt="{{ item.title }}"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/400?text=No+Image';">
+                            </div>
+                        </div>
+                        
+                        <div class="col-8 col-md-4">
+                            <h6 class="fw-bold text-navy mb-1 text-truncate">{{ item.title }}</h6>
+                            <p class="text-muted small mb-2">{{ item.category or 'Product' }}</p>
+                            
+                            <div class="variant-selector">
+                                <form action="/update_variant/{{ loop.index0 }}" method="POST">
+                                    <div class="input-group input-group-sm">
+                                        <label class="input-group-text bg-white border-0 ps-0 text-muted small" style="font-size: 0.7rem;">Size:</label>
+                                        <select name="new_variant" onchange="this.form.submit()" 
+                                                class="form-select form-select-sm border-0 bg-light rounded-pill px-3 shadow-none fw-bold" 
+                                                style="width: fit-content; font-size: 0.75rem; cursor: pointer;">
+                                            {% if not item.all_variants %}
+                                                <option>Standard</option>
+                                            {% else %}
+                                                {% for v in item.all_variants %}
+                                                <option value="{{ v.name }}" {% if v.name == item.variant %}selected{% endif %}>
+                                                    {{ v.name }} - ৳{{ v.price }}
+                                                </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-7 col-md-3 mt-3 mt-md-0">
+                            <div class="d-flex flex-column align-items-start align-items-md-center">
+                                <div class="daraz-qty-box d-flex align-items-center border rounded-pill overflow-hidden bg-light">
+                                    <a href="/update_cart/{{ loop.index0 }}/minus" class="qty-btn text-decoration-none">-</a>
+                                    <span class="qty-val">{{ item.quantity }}</span>
+                                    <a href="/update_cart/{{ loop.index0 }}/plus" class="qty-btn text-decoration-none">+</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-5 col-md-3 text-end mt-3 mt-md-0">
+                            <div class="text-muted small mb-1">Total</div>
+                            <div class="fw-bold text-primary h5 mb-2">৳{{ item.subtotal }}</div>
+                            <a href="/remove_from_cart/{{ loop.index0 }}" 
+                               class="btn btn-sm btn-outline-danger border-0 rounded-pill px-3" 
+                               onclick="return confirm('Remove this item?')">
+                                <i class="fa-solid fa-trash-can me-1"></i> <span class="small">Remove</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="mt-4">
+                <a href="/" class="text-decoration-none text-primary fw-bold">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 sticky-top" style="top: 100px;">
+                <h5 class="fw-bold mb-4 text-navy text-uppercase" style="letter-spacing: 1px;">Order Summary</h5>
+                <div class="summary-details">
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Items Subtotal</span>
+                        <span class="fw-bold">৳{{ total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Delivery Charge</span>
+                        <span class="text-success fw-bold">FREE</span>
+                    </div>
+                    <hr class="opacity-10">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <span class="h5 fw-bold text-navy mb-0">Total Payable</span>
+                        </div>
+                        <span class="h3 fw-bold text-primary mb-0">৳{{ total }}</span>
+                    </div>
+                </div>
+                <a href="/checkout" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm transition-up text-decoration-none text-center">
+                    Proceed to Checkout <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 py-5 text-center mt-4">
+        <div class="card-body">
+            <i class="fa-solid fa-cart-arrow-down fa-5x text-light mb-4"></i>
+            <h4 class="fw-bold">Your cart is currently empty!</h4>
+            <a href="/" class="btn btn-primary rounded-pill px-5 py-3 mt-3 fw-bold shadow">Explore Products</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .text-navy { color: #0b2241; }
+    .daraz-qty-box { width: fit-content; min-width: 110px; }
+    .qty-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: #0b2241; font-weight: bold; transition: 0.2s; }
+    .qty-btn:hover { background-color: #e2e6ea; color: #007bff; }
+    .qty-val { width: 40px; text-align: center; background: white; height: 35px; line-height: 35px; font-weight: 800; }
+    .transition-up:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,123,255,0.3) !important; }
+</style>
+{% endblock %}
