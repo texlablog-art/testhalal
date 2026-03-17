@@ -95,9 +95,13 @@
                 {% endif %}
 
                 <div class="mb-4">
-                    <h6 class="fw-bold text-uppercase small text-muted border-bottom pb-2 mb-3">Specifications</h6>
-                    <div class="product-description text-secondary lh-lg">
-                        {{ p.description | safe if p.description else "Premium quality product with sleek design and durable performance." }}
+                    <h6 class="fw-bold text-uppercase small text-muted border-bottom pb-2 mb-3">Product Description</h6>
+                    <div class="product-description text-secondary">
+                        {% if p.description %}
+                            {{ p.description | safe }}
+                        {% else %}
+                            Premium quality product with sleek design and durable performance.
+                        {% endif %}
                     </div>
                 </div>
 
@@ -156,13 +160,20 @@
     .btn-whatsapp { background: #25D366; color: white; font-weight: bold; }
     .x-small { font-size: 11px; }
 
+    /* Fix for well-formatted description ✨ */
+    .product-description {
+        white-space: pre-wrap; /* এটি টেক্সটের লাইন ব্রেক এবং স্পেস বজায় রাখে */
+        word-wrap: break-word;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
     /* Variant Styling */
     .btn-check:checked + .btn-outline-navy {
         background-color: var(--p-navy) !important;
         color: white !important;
         border-color: var(--p-navy) !important;
     }
-    .variant-label { cursor: pointer; }
 
     /* Gallery Styling */
     .thumb-wrapper { 
@@ -177,7 +188,6 @@
     .video-thumb { position: relative; }
     .video-label { position: absolute; bottom: 2px; font-size: 9px; color: white; font-weight: bold; text-transform: uppercase; }
 
-    /* Floating Bar */
     .mobile-action-bar {
         position: fixed; bottom: 0; left: 0; right: 0;
         background: white; z-index: 1050; box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
@@ -189,13 +199,11 @@
     const priceDisplay = document.getElementById('livePrice');
     const discountSection = document.getElementById('discountSection');
 
-    // ১. ইমেজ সোয়াপিং
     function swapToImage(src, el) {
         wrapper.innerHTML = `<img src="${src}" id="mainView" class="img-fluid object-fit-contain p-3 animate__animated animate__fadeIn">`;
         updateActiveThumb(el);
     }
 
-    // ২. ভিডিও সোয়াপিং
     function swapToVideo(url, el) {
         let videoId = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
         wrapper.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
@@ -207,33 +215,25 @@
         el.classList.add('active');
     }
 
-    // ৩. ভেরিয়েন্ট অনুযায়ী প্রাইস আপডেট ✨
     document.querySelectorAll('input[name="product_variant"]').forEach(radio => {
         radio.addEventListener('change', function() {
             const newPrice = this.getAttribute('data-price');
             if (priceDisplay && newPrice) {
                 priceDisplay.innerText = `৳${newPrice}`;
                 priceDisplay.classList.add('animate__animated', 'animate__pulse');
-                
-                // ভেরিয়েন্ট সিলেক্ট করলে ডিসকাউন্ট সেকশন হাইড করা (অপশনাল)
                 if(discountSection) discountSection.style.opacity = "0.3"; 
-
                 setTimeout(() => priceDisplay.classList.remove('animate__animated', 'animate__pulse'), 500);
             }
         });
     });
 
-    // ৪. অর্ডার হ্যান্ডেলিং (সিলেক্টেড ভেরিয়েন্ট সহ) ✨
     function handleOrder(action) {
         const selectedVariant = document.querySelector('input[name="product_variant"]:checked');
         const variantValue = selectedVariant ? selectedVariant.value : "";
-        
         let url = `/add_to_cart/{{ p._id }}?variant=${encodeURIComponent(variantValue)}`;
-        
         if (action === 'checkout') {
             url += "&next=checkout";
         }
-        
         window.location.href = url;
     }
 </script>
